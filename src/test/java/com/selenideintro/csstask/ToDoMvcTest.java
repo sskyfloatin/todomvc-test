@@ -3,7 +3,7 @@ import org.junit.jupiter.api.Test;
 import static com.codeborne.selenide.CollectionCondition.texts;
 import static com.codeborne.selenide.Selenide.*;
 
-public class TodoMvcTest {
+public class ToDoMvcTest {
 
     @Test
     void completeTask() {
