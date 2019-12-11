@@ -18,7 +18,7 @@ public class ToDoMvcTest {
         $x("//*[@id='new-todo']").val("c").pressEnter();
         $$x("//*[@id='todo-list']/li").shouldHave(texts("a", "b", "c"));
 
-        $x("//*[@id='todo-list']/li[.//text()='b']//*[contains(concat(\" \", normalize-space(@class), \" \"), \" toggle \")]").click();
+        $x("//*[@id='todo-list']/li[.//text()='b']//*" + XPath.filterBy.cssClass("toggle")).click();
         $$x("//*[@id='todo-list']/li" + XPath.filterBy.cssClass("completed")).shouldHave(texts("b"));
         $$x("//*[@id='todo-list']/li" + XPath.filterBy.noCssClass("completed")).shouldHave(texts("a", "c"));
     }
