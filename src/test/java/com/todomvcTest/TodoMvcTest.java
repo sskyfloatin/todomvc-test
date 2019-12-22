@@ -34,7 +34,7 @@ public class TodoMvcTest {
         $$("#todo-list>li").findBy(text("a")).doubleClick();
         $$("#todo-list>li").findBy(cssClass("editing")).find(".edit").append(" to be canceled").pressEscape();
 
-        //Delete
+        // delete
         $$("#todo-list>li").findBy(text("a")).hover().find(".destroy").click();
         $$("#todo-list>li").shouldHave(texts("c"));
     }
