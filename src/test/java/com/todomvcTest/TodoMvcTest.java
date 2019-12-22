@@ -9,28 +9,28 @@ import static org.openqa.selenium.support.ui.ExpectedConditions.*;
 public class TodoMvcTest {
 
     @Test
-    public void basicTaskActions() throws InterruptedException {
+    public void basicTaskActions() {
 
         open("http://todomvc4tasj.herokuapp.com/");
         Wait().until(jsReturnsValue("return $._data($('#clear-completed').get(0), 'events').hasOwnProperty('click')"));
 
-        //Create
+        // create
         $("#new-todo").append("a").pressEnter();
         $("#new-todo").append("b").pressEnter();
         $("#new-todo").append("c").pressEnter();
         $$("#todo-list>li").shouldHave(texts("a", "b", "c"));
 
-        //Edit
+        // edit
         $$("#todo-list>li").findBy(text("b")).doubleClick();
         $$("#todo-list>li").findBy(cssClass("editing")).find(".edit")
-                .append(" Edited").pressEnter();
+                .append(" edited").pressEnter();
 
-        //Complete
-        $$("#todo-list>li").findBy(text("b Edited")).find(".toggle").click();
+        // complete and clear
+        $$("#todo-list>li").findBy(text("b edited")).find(".toggle").click();
         $("#clear-completed").click();
         $$("#todo-list>li").shouldHave(texts("a", "c"));
 
-        //Cancel while editing
+        // cancel editing
         $$("#todo-list>li").findBy(text("a")).doubleClick();
         $$("#todo-list>li").findBy(cssClass("editing")).find(".edit").append(" to be canceled").pressEscape();
 
