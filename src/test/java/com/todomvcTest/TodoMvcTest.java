@@ -2,6 +2,7 @@ package com.todomvcTest;
 
 import com.codeborne.selenide.CollectionCondition;
 import com.codeborne.selenide.ElementsCollection;
+import com.codeborne.selenide.SelenideElement;
 import org.junit.jupiter.api.Test;
 
 import static com.codeborne.selenide.CollectionCondition.*;
@@ -25,7 +26,7 @@ public class TodoMvcTest {
 
         // edit
         doubleClick("b");
-        tasks.findBy(cssClass(editedTask)).find(".edit")
+        editingTask()
                 .append(" edited").pressEnter();
 
         // complete & clear
@@ -35,18 +36,20 @@ public class TodoMvcTest {
 
         // cancel editing
         doubleClick("a");
-        tasks.findBy(cssClass(editedTask)).find(".edit").append(" to be canceled").pressEscape();
+        editingTask().append(" to be canceled").pressEscape();
 
         // delete
         tasks.findBy(text("a")).hover().find(".destroy").click();
         assertText(texts("c"));
     }
 
+    private SelenideElement editingTask() {
+        return tasks.findBy(cssClass("editing")).find(".edit");
+    }
+
     private void doubleClick(String task) {
         tasks.findBy(text(task)).doubleClick();
     }
-
-    final String editedTask = "editing";
 
     private final ElementsCollection tasks = $$("#todo-list>li");
 
