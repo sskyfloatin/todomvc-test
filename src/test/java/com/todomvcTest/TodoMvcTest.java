@@ -10,31 +10,24 @@ import static org.openqa.selenium.support.ui.ExpectedConditions.*;
 
 public class TodoMvcTest {
 
-    private final ElementsCollection tasks = $$("#todo-list>li");
+    private final ElementsCollection todoList = $$("#todo-list>li");
 
     @Test
     public void basicTodoActions() {
 
-        open("http://todomvc4tasj.herokuapp.com/");
-        Wait().until(jsReturnsValue("return $._data($('#clear-completed').get(0), 'events').hasOwnProperty('click')"));
+        openApp();
 
-        // create
         add("a", "b", "c");
         assertTodos("a", "b", "c");
 
-        // edit
-        startEditing("b", " edited").pressEnter();
+        edit("b", " edited");
 
-        // complete and clear
-        findTodoByText("b edited").find(".toggle").click();
-        $("#clear-completed").click();
+        complete("b edited");
         assertTodos("a", "c");
 
-        // cancel editing
-        startEditing("a", " to be canceled").pressEscape();
+        cancelEdit("a", " to be canceled");
 
-        // delete
-        findTodoByText("a").hover().find(".destroy").click();
+        delete("a");
         assertTodos("c");
     }
 
@@ -45,23 +38,40 @@ public class TodoMvcTest {
     }
 
     private void assertTodos(String... string) {
-        tasks.shouldHave(texts(string));
-
+        todoList.shouldHave(texts(string));
     }
 
-    private SelenideElement startEditing(String todoText, String editingText) {
+    private SelenideElement edit(String todoText, String editingText) {
         findTodoByText(todoText).doubleClick();
-        findTodoByCssClass("editing").find(".edit")
-                .append(editingText);
-        return findTodoByCssClass("editing").find(".edit");
+        findTodoByCssClass().append(editingText);
+        return findTodoByCssClass().pressEnter();
+    }
 
+    private SelenideElement cancelEdit(String todoText, String editingText) {
+        findTodoByText(todoText).doubleClick();
+        findTodoByCssClass().append(editingText);
+        return findTodoByCssClass().pressEscape();
+    }
+
+    private void delete(String todoText) {
+        findTodoByText(todoText).hover().find(".destroy").click();
+    }
+
+    private void complete(String todoText) {
+        findTodoByText(todoText).find(".toggle").click();
+        $("#clear-completed").click();
     }
 
     private SelenideElement findTodoByText(String string) {
-        return tasks.findBy(text(string));
+        return todoList.findBy(text(string));
     }
 
-    private SelenideElement findTodoByCssClass(String string) {
-        return tasks.findBy(cssClass(string));
+    private SelenideElement findTodoByCssClass() {
+        return todoList.findBy(cssClass("editing")).find(".edit");
+    }
+
+    private void openApp() {
+        open("http://todomvc4tasj.herokuapp.com/");
+        Wait().until(jsReturnsValue("return $._data($('#clear-completed').get(0), 'events').hasOwnProperty('click')"));
     }
 }
