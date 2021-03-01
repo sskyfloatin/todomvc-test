@@ -1,5 +1,6 @@
 package com.todomvcTest;
 
+import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 import org.junit.jupiter.api.Test;
@@ -15,12 +16,14 @@ public class TodoMvcTest {
     @Test
     public void basicTodoActions() {
 
+        Configuration.fastSetValue = true;
+
         openApp();
 
         add("a", "b", "c");
         assertTodos("a", "b", "c");
 
-        edit("b", " edited");
+        edit("b", "b edited");
 
         complete("b edited");
         assertTodos("a", "c");
@@ -29,6 +32,11 @@ public class TodoMvcTest {
 
         delete("a");
         assertTodos("c");
+    }
+
+    private void openApp() {
+        open("http://todomvc4tasj.herokuapp.com/");
+        Wait().until(jsReturnsValue("return $._data($('#clear-completed').get(0), 'events').hasOwnProperty('click')"));
     }
 
     private void add(String... texts) {
@@ -42,36 +50,25 @@ public class TodoMvcTest {
     }
 
     private SelenideElement edit(String todoText, String editingText) {
-        findTodoByText(todoText).doubleClick();
-        findTodoByCssClass().append(editingText);
-        return findTodoByCssClass().pressEnter();
-    }
-
-    private SelenideElement cancelEdit(String todoText, String editingText) {
-        findTodoByText(todoText).doubleClick();
-        findTodoByCssClass().append(editingText);
-        return findTodoByCssClass().pressEscape();
-    }
-
-    private void delete(String todoText) {
-        findTodoByText(todoText).hover().find(".destroy").click();
+        todoList.findBy(text(todoText)).doubleClick();
+        return findTodoByCssClass().setValue(editingText).pressEnter();
     }
 
     private void complete(String todoText) {
-        findTodoByText(todoText).find(".toggle").click();
+        todoList.findBy(text(todoText)).find(".toggle").click();
         $("#clear-completed").click();
     }
 
-    private SelenideElement findTodoByText(String string) {
-        return todoList.findBy(text(string));
+    private SelenideElement cancelEdit(String todoText, String editingText) {
+        todoList.findBy(text(todoText)).doubleClick();
+        return findTodoByCssClass().setValue(editingText).pressEscape();
+    }
+
+    private void delete(String todoText) {
+        todoList.findBy(text(todoText)).hover().find(".destroy").click();
     }
 
     private SelenideElement findTodoByCssClass() {
         return todoList.findBy(cssClass("editing")).find(".edit");
-    }
-
-    private void openApp() {
-        open("http://todomvc4tasj.herokuapp.com/");
-        Wait().until(jsReturnsValue("return $._data($('#clear-completed').get(0), 'events').hasOwnProperty('click')"));
     }
 }
