@@ -11,8 +11,6 @@ import static org.openqa.selenium.support.ui.ExpectedConditions.*;
 
 public class TodoMvcTest {
 
-    private final ElementsCollection todoList = $$("#todo-list>li");
-
     @Test
     public void basicTodoActions() {
 
@@ -34,6 +32,8 @@ public class TodoMvcTest {
         assertTodos("c");
     }
 
+    private final ElementsCollection todoList = $$("#todo-list>li");
+
     private void openApp() {
         open("http://todomvc4tasj.herokuapp.com/");
         Wait().until(jsReturnsValue("return $._data($('#clear-completed').get(0), 'events').hasOwnProperty('click')"));
@@ -45,30 +45,33 @@ public class TodoMvcTest {
         }
     }
 
-    private void assertTodos(String... string) {
-        todoList.shouldHave(texts(string));
+    private void assertTodos(String... texts) {
+        todoList.shouldHave(texts(texts));
     }
 
-    private SelenideElement edit(String todoText, String editingText) {
-        todoList.findBy(text(todoText)).doubleClick();
-        return findTodoByCssClass().setValue(editingText).pressEnter();
+    private SelenideElement edit(String oldText, String newText) {
+        return startEditing(oldText, newText).pressEnter();
     }
 
-    private void complete(String todoText) {
-        todoList.findBy(text(todoText)).find(".toggle").click();
+    private void complete(String text) {
+        todoList.findBy(text(text)).find(".toggle").click();
         $("#clear-completed").click();
     }
 
-    private SelenideElement cancelEdit(String todoText, String editingText) {
-        todoList.findBy(text(todoText)).doubleClick();
-        return findTodoByCssClass().setValue(editingText).pressEscape();
+    private SelenideElement cancelEdit(String oldText, String newText) {
+        return startEditing(oldText, newText).pressEscape();
     }
 
-    private void delete(String todoText) {
-        todoList.findBy(text(todoText)).hover().find(".destroy").click();
+    private void delete(String text) {
+        todoList.findBy(text(text)).hover().find(".destroy").click();
     }
 
     private SelenideElement findTodoByCssClass() {
         return todoList.findBy(cssClass("editing")).find(".edit");
+    }
+
+    private SelenideElement startEditing(String oldText, String newText) {
+        todoList.findBy(text(oldText)).doubleClick();
+        return findTodoByCssClass().setValue(newText);
     }
 }
