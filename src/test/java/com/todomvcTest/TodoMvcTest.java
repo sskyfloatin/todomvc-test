@@ -1,20 +1,19 @@
 package com.todomvcTest;
 
-import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 import org.junit.jupiter.api.Test;
-import static com.codeborne.selenide.CollectionCondition.*;
-import static com.codeborne.selenide.Condition.*;
+
+import static com.codeborne.selenide.CollectionCondition.texts;
+import static com.codeborne.selenide.Condition.cssClass;
+import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Selenide.*;
-import static org.openqa.selenium.support.ui.ExpectedConditions.*;
+import static org.openqa.selenium.support.ui.ExpectedConditions.jsReturnsValue;
 
 public class TodoMvcTest {
 
     @Test
     public void basicTodoActions() {
-
-        Configuration.fastSetValue = true;
 
         openApp();
 
@@ -53,8 +52,8 @@ public class TodoMvcTest {
         return startEditing(oldText, newText).pressEnter();
     }
 
-    private void complete(String text) {
-        todoList.findBy(text(text)).find(".toggle").click();
+    private void complete(String todo) {
+        toggle(todo);
         $("#clear-completed").click();
     }
 
@@ -66,12 +65,12 @@ public class TodoMvcTest {
         todoList.findBy(text(text)).hover().find(".destroy").click();
     }
 
-    private SelenideElement findTodoByCssClass() {
-        return todoList.findBy(cssClass("editing")).find(".edit");
-    }
-
     private SelenideElement startEditing(String oldText, String newText) {
         todoList.findBy(text(oldText)).doubleClick();
-        return findTodoByCssClass().setValue(newText);
+        return todoList.findBy(cssClass("editing")).find(".edit").setValue(newText);
+    }
+
+    private void toggle(String todo) {
+        todoList.findBy(text(todo)).find(".toggle").click();
     }
 }
