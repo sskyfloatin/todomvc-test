@@ -65,12 +65,12 @@ public class TodoMvcTest {
         return todoList.findBy(cssClass("editing")).find(".edit").setValue(newText);
     }
 
-    private SelenideElement edit(String oldText, String newText) {
-        return startEditing(oldText, newText).pressEnter();
+    private void edit(String oldText, String newText) {
+        startEditing(oldText, newText).pressEnter();
     }
 
-    private SelenideElement cancelEdit(String oldText, String newText) {
-        return startEditing(oldText, newText).pressEscape();
+    private void cancelEdit(String oldText, String newText) {
+        startEditing(oldText, newText).pressEscape();
     }
 
     private void delete(String text) {
