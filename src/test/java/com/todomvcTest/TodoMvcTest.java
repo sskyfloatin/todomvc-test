@@ -3,6 +3,7 @@ package com.todomvcTest;
 import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
+import com.todomvcTest.testConfigs.BaseTest;
 import org.junit.jupiter.api.Test;
 
 import static com.codeborne.selenide.CollectionCondition.texts;
@@ -11,12 +12,10 @@ import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Selenide.*;
 import static org.openqa.selenium.support.ui.ExpectedConditions.jsReturnsValue;
 
-public class TodoMvcTest {
+public class TodoMvcTest extends BaseTest {
 
     @Test
     public void basicTodoActions() {
-
-        Configuration.fastSetValue = true;
 
         openApp();
 
@@ -29,7 +28,7 @@ public class TodoMvcTest {
         clearCompleted();
         assertTodos("a", "c");
 
-        cancelEdit("a", " to be canceled");
+        cancelEdit("a", "to be canceled");
 
         delete("a");
         assertTodos("c");
@@ -38,7 +37,7 @@ public class TodoMvcTest {
     private final ElementsCollection todoList = $$("#todo-list>li");
 
     private void openApp() {
-        open("http://todomvc4tasj.herokuapp.com/");
+        open(Configuration.baseUrl);
         Wait().until(jsReturnsValue("return $._data($('#clear-completed').get(0), 'events').hasOwnProperty('click')"));
     }
 
