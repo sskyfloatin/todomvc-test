@@ -1,36 +1,35 @@
-package com.todomvcTest;
+package com.how.autotest.todomvc_test;
 
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
-import com.todomvcTest.testConfigs.AtTodoMvcWithClearedStorageBeforeEachTest;
+import com.how.autotest.todomvc_test.testConfigs.AtTodoMvcWithClearedStorageBeforeEachTest;
 import org.junit.jupiter.api.Test;
 
 import static com.codeborne.selenide.CollectionCondition.texts;
-import static com.codeborne.selenide.Condition.cssClass;
-import static com.codeborne.selenide.Condition.text;
+import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
 
-
-public class TodoMvcTestIndependanceDay extends AtTodoMvcWithClearedStorageBeforeEachTest {
+public class TodoMvcTest extends AtTodoMvcWithClearedStorageBeforeEachTest {
 
     @Test
     public void filterTodos() {
-
         add("a", "b", "c");
 
         toggle("b");
 
-        sortByType("active");
-        assertTodosActive("a", "c");
+        filterActive();
+        assertTodos("a", "c");
 
-        sortByType("completed");
-        assertTodosCompleted("b");
+        filterCompleted();
+        assertTodos("b");
+
+        filterAll();
+        assertTodos("a", "b", "c");
     }
 
     @Test
-    public void basicTodoActions() {
-
+    public void basicTodoManagement() {
         add("a", "b", "c");
         assertTodos("a", "b", "c");
 
@@ -46,12 +45,7 @@ public class TodoMvcTestIndependanceDay extends AtTodoMvcWithClearedStorageBefor
         assertTodos("c");
     }
 
-
-    private final ElementsCollection todoList = $$("#todo-list>li");
-
-    private final ElementsCollection todoListActive = $$("#todo-list>li.active");
-
-    private final ElementsCollection todoListCompleted = $$("#todo-list>li.completed");
+    private final ElementsCollection todos  = $$("#todo-list>li");
 
     private void add(String... texts) {
         for (String text : texts) {
@@ -60,19 +54,11 @@ public class TodoMvcTestIndependanceDay extends AtTodoMvcWithClearedStorageBefor
     }
 
     private void assertTodos(String... texts) {
-        todoList.shouldHave(texts(texts));
-    }
-
-    private void assertTodosActive(String... texts) {
-        todoListActive.shouldHave(texts(texts));
-    }
-
-    private void assertTodosCompleted(String... texts) {
-        todoListCompleted.shouldHave(texts(texts));
+        todos.filterBy(visible).shouldHave(texts(texts));
     }
 
     private void toggle(String todo) {
-        todoList.findBy(text(todo)).find(".toggle").click();
+        todos.findBy(text(todo)).find(".toggle").click();
     }
 
     private void clearCompleted() {
@@ -80,8 +66,8 @@ public class TodoMvcTestIndependanceDay extends AtTodoMvcWithClearedStorageBefor
     }
 
     private SelenideElement startEditing(String oldText, String newText) {
-        todoList.findBy(text(oldText)).doubleClick();
-        return todoList.findBy(cssClass("editing")).find(".edit").setValue(newText);
+        todos.findBy(text(oldText)).doubleClick();
+        return todos.findBy(cssClass("editing")).find(".edit").setValue(newText);
     }
 
     private void edit(String oldText, String newText) {
@@ -93,10 +79,18 @@ public class TodoMvcTestIndependanceDay extends AtTodoMvcWithClearedStorageBefor
     }
 
     private void delete(String text) {
-        todoList.findBy(text(text)).hover().find(".destroy").click();
+        todos.findBy(text(text)).hover().find(".destroy").click();
     }
 
-    private void sortByType(String type) {
-        $("[href='#/" + type + "']").click();
+    private void filterActive() {
+        $("[href='#/active']").click();
+    }
+
+    private void filterCompleted() {
+        $("[href='#/completed']").click();
+    }
+
+    private void filterAll() {
+        $("[href='#/']").click();
     }
 }
