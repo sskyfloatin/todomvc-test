@@ -1,19 +1,24 @@
 package com.how.autotest.todomvc_test;
 
 import com.codeborne.selenide.ElementsCollection;
+import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
-import com.how.autotest.todomvc_test.testConfigs.AtTodoMvcWithClearedStorageBeforeEachTest;
+import com.codeborne.selenide.WebDriverRunner;
+import com.how.autotest.todomvc_test.testConfigs.BaseTest;
 import org.junit.jupiter.api.Test;
 
 import static com.codeborne.selenide.CollectionCondition.texts;
 import static com.codeborne.selenide.Condition.*;
-import static com.codeborne.selenide.Selenide.$;
-import static com.codeborne.selenide.Selenide.$$;
+import static com.codeborne.selenide.Selenide.*;
+import static com.codeborne.selenide.Selenide.Wait;
+import static org.openqa.selenium.support.ui.ExpectedConditions.jsReturnsValue;
 
-public class TodoMvcTest extends AtTodoMvcWithClearedStorageBeforeEachTest {
+public class TodoMvcTest extends BaseTest {
 
     @Test
     public void filterTodos() {
+        openApp();
+
         add("a", "b", "c");
 
         toggle("b");
@@ -30,6 +35,8 @@ public class TodoMvcTest extends AtTodoMvcWithClearedStorageBeforeEachTest {
 
     @Test
     public void basicTodoManagement() {
+        openApp();
+
         add("a", "b", "c");
         assertTodos("a", "b", "c");
 
@@ -92,5 +99,13 @@ public class TodoMvcTest extends AtTodoMvcWithClearedStorageBeforeEachTest {
 
     private void filterAll() {
         $("[href='#/']").click();
+    }
+
+    private void openApp() {
+        if (WebDriverRunner.hasWebDriverStarted()) {
+            Selenide.clearBrowserLocalStorage();
+        }
+        open("/");
+        Wait().until(jsReturnsValue("return $._data($('#clear-completed').get(0), 'events').hasOwnProperty('click')"));
     }
 }
