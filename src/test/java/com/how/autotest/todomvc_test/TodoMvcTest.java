@@ -17,10 +17,7 @@ public class TodoMvcTest extends BaseTest {
 
     @Test
     public void filterTodos() {
-        openApp();
-
-        add("a", "b", "c");
-
+        givenAppOpenedWith("a", "b", "c");
         toggle("b");
 
         filterActive();
@@ -35,7 +32,7 @@ public class TodoMvcTest extends BaseTest {
 
     @Test
     public void basicTodoManagement() {
-        openApp();
+        givenAppOpenedWith("a", "b", "c");
 
         add("a", "b", "c");
         assertTodos("a", "b", "c");
@@ -53,6 +50,20 @@ public class TodoMvcTest extends BaseTest {
     }
 
     private final ElementsCollection todos  = $$("#todo-list>li");
+
+    private void givenAppOpenedWith(String... texts) {
+        openApp();
+        add(texts);
+    }
+
+    private void openApp() {
+        if (WebDriverRunner.hasWebDriverStarted()) {
+            Selenide.clearBrowserLocalStorage();
+        }
+        open("/");
+        Wait().until(jsReturnsValue(
+                "return $._data($('#clear-completed').get(0), 'events').hasOwnProperty('click')"));
+    }
 
     private void add(String... texts) {
         for (String text : texts) {
@@ -99,13 +110,5 @@ public class TodoMvcTest extends BaseTest {
 
     private void filterAll() {
         $("[href='#/']").click();
-    }
-
-    private void openApp() {
-        if (WebDriverRunner.hasWebDriverStarted()) {
-            Selenide.clearBrowserLocalStorage();
-        }
-        open("/");
-        Wait().until(jsReturnsValue("return $._data($('#clear-completed').get(0), 'events').hasOwnProperty('click')"));
     }
 }
