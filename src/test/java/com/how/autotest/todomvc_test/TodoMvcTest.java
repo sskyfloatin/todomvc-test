@@ -32,7 +32,7 @@ public class TodoMvcTest extends BaseTest {
 
     @Test
     public void basicTodoManagement() {
-        givenAppOpenedWith("a", "b", "c");
+        givenAppOpened();
 
         add("a", "b", "c");
         assertTodos("a", "b", "c");
@@ -52,11 +52,11 @@ public class TodoMvcTest extends BaseTest {
     private final ElementsCollection todos  = $$("#todo-list>li");
 
     private void givenAppOpenedWith(String... texts) {
-        openApp();
+        givenAppOpened();
         add(texts);
     }
 
-    private void openApp() {
+    private void givenAppOpened() {
         if (WebDriverRunner.hasWebDriverStarted()) {
             Selenide.clearBrowserLocalStorage();
         }
