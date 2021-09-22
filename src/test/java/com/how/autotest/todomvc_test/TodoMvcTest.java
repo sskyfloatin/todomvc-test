@@ -49,6 +49,67 @@ public class TodoMvcTest extends BaseTest {
         assertTodos("c");
     }
 
+    @Test
+    public void uncompleteTodo() {
+        givenAppOpenedWith("a");
+        toggle("a");
+
+        filterCompleted();
+        assertTodos("a");
+
+        toggle("a");
+        filterActive();
+        assertTodos("a");
+    }
+
+    @Test
+    public void completeAllTodos() {
+        givenAppOpenedWith("a", "b", "c");
+
+        toggleAll();
+        filterCompleted();
+        assertTodos("a", "b", "c");
+    }
+
+    @Test
+    public void uncompleteAllTodos() {
+        givenAppOpenedWith("a", "b", "c");
+
+        toggleAll();
+        filterCompleted();
+        toggleAll();
+
+        filterActive();
+        assertTodos("a", "b", "c");
+    }
+
+    @Test
+    public void clearCompleteTodo() {
+        givenAppOpenedWith("a", "b", "c");
+        toggle("a");
+
+        delete("a");
+        assertTodos("b", "c");
+    }
+
+    @Test
+    public void clearAllTodos() {
+        givenAppOpenedWith("a", "b", "c");
+        toggleAll();
+
+        clearCompleted();
+        assertTodoListEmpty();
+    }
+
+    @Test
+    public void editCompleteTodo() {
+        givenAppOpenedWith("a", "b", "c");
+        toggle("a");
+
+        edit("a", "abc");
+        assertTodos("abc", "b", "c");
+    }
+
     private final ElementsCollection todos  = $$("#todo-list>li");
 
     private void givenAppOpenedWith(String... texts) {
@@ -75,8 +136,16 @@ public class TodoMvcTest extends BaseTest {
         todos.filterBy(visible).shouldHave(texts(texts));
     }
 
+    private void assertTodoListEmpty() {
+        $$("#todo-list>li").shouldHaveSize(0);
+    }
+
     private void toggle(String todo) {
         todos.findBy(text(todo)).find(".toggle").click();
+    }
+
+    private void toggleAll() {
+        $("#toggle-all").click();
     }
 
     private void clearCompleted() {
