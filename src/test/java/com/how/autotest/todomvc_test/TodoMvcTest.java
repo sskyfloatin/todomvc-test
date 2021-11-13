@@ -50,6 +50,44 @@ public class TodoMvcTest extends BaseTest {
     }
 
     @Test
+    public void addTodos() {
+        givenAppOpened();
+
+        add("a", "b", "c");
+        assertTodos("a", "b", "c");
+        assertTodoCounter("3");
+    }
+
+    @Test
+    public void editTodo() {
+        givenAppOpened();
+
+        add("a", "b", "c");
+        edit("b", "b edited");
+        assertTodos("a", "b edited", "c");
+        assertTodoCounter("3");
+    }
+
+    @Test
+    public void deleteTodos() {
+        givenAppOpened();
+
+        add("a", "b", "c");
+        delete("a", "c");
+        assertTodos("b");
+        assertTodoCounter("1");
+    }
+
+    @Test
+    public void deleteAllTodos() {
+        givenAppOpened();
+
+        add("a", "b", "c");
+        delete("a", "b", "c");
+        assertNoTodos();
+    }
+
+    @Test
     public void uncompleteTodo() {
         givenAppOpenedWith("a");
         toggle("a");
@@ -97,8 +135,10 @@ public class TodoMvcTest extends BaseTest {
         givenAppOpenedWith("a", "b", "c");
         toggleAll();
 
+        assertTodoCounter("0");
+
         clearCompleted();
-        assertTodoListEmpty();
+        assertNoTodos();
     }
 
     @Test
@@ -136,8 +176,12 @@ public class TodoMvcTest extends BaseTest {
         todos.filterBy(visible).shouldHave(texts(texts));
     }
 
-    private void assertTodoListEmpty() {
+    private void assertNoTodos() {
         $$("#todo-list>li").shouldHaveSize(0);
+    }
+
+    private void assertTodoCounter(String count) {
+        $("#todo-count strong").shouldHave(text(count));
     }
 
     private void toggle(String todo) {
@@ -165,8 +209,10 @@ public class TodoMvcTest extends BaseTest {
         startEditing(oldText, newText).pressEscape();
     }
 
-    private void delete(String text) {
-        todos.findBy(text(text)).hover().find(".destroy").click();
+    private void delete(String... texts) {
+        for (String text : texts) {
+            todos.findBy(text(text)).hover().find(".destroy").click();
+        }
     }
 
     private void filterActive() {
