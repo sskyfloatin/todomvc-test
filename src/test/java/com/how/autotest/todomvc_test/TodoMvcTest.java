@@ -6,11 +6,12 @@ import com.codeborne.selenide.SelenideElement;
 import com.codeborne.selenide.WebDriverRunner;
 import com.how.autotest.todomvc_test.testConfigs.BaseTest;
 import org.junit.jupiter.api.Test;
+import org.openqa.selenium.Keys;
+import org.openqa.selenium.interactions.Actions;
 
 import static com.codeborne.selenide.CollectionCondition.texts;
 import static com.codeborne.selenide.Condition.*;
 import static com.codeborne.selenide.Selenide.*;
-import static com.codeborne.selenide.Selenide.Wait;
 import static org.openqa.selenium.support.ui.ExpectedConditions.jsReturnsValue;
 
 public class TodoMvcTest extends BaseTest {
@@ -50,41 +51,92 @@ public class TodoMvcTest extends BaseTest {
     }
 
     @Test
+    public void assertNoTodosOnFreshOpen() {
+        givenAppOpened();
+
+        assertNoTodos();
+    }
+
+    @Test
     public void addTodos() {
         givenAppOpened();
 
-        add("a", "b", "c");
+        add("a");
+        assertTodos("a");
+        assertActiveItemsLeft(1);
+
+        add("b", "c");
         assertTodos("a", "b", "c");
-        assertTodoCounter("3");
+        assertActiveItemsLeft(3);
     }
 
     @Test
     public void editTodo() {
-        givenAppOpened();
+        givenAppOpenedWith("a", "b", "c");
 
-        add("a", "b", "c");
+        assertActiveItemsLeft(3);
         edit("b", "b edited");
         assertTodos("a", "b edited", "c");
-        assertTodoCounter("3");
+        assertActiveItemsLeft(3);
     }
 
     @Test
     public void deleteTodos() {
-        givenAppOpened();
+        givenAppOpenedWith("a", "b", "c");
 
-        add("a", "b", "c");
         delete("a", "c");
         assertTodos("b");
-        assertTodoCounter("1");
+        assertActiveItemsLeft(1);
+    }
+
+    @Test
+    public void deleteTodoByEditToBlankString() {
+        givenAppOpenedWith("a");
+
+        edit("a", " ");
+
+        assertNoTodos();
     }
 
     @Test
     public void deleteAllTodos() {
-        givenAppOpened();
+        givenAppOpenedWith("a", "b", "c");
 
-        add("a", "b", "c");
         delete("a", "b", "c");
         assertNoTodos();
+    }
+
+    @Test
+    public void assertTabOrder() {
+        givenAppOpenedWith("a", "b", "c");
+
+        pressTabNumberOfTimes(1);
+        pressSpace();
+
+        assertActiveItemsLeft(0);
+
+        pressSpace();
+
+        assertActiveItemsLeft(3);
+
+        pressTabNumberOfTimes(3);
+        pressSpace();
+        clearCompleted();
+
+        assertTodos("a", "b");
+        assertActiveItemsLeft(2);
+    }
+
+    @Test
+    public void completeTodo() {
+        givenAppOpenedWith("a", "b", "c");
+        toggle("c");
+
+        assertActiveItemsLeft(2);
+
+        clearCompleted();
+        assertTodos("a", "b");
+        assertActiveItemsLeft(2);
     }
 
     @Test
@@ -104,9 +156,12 @@ public class TodoMvcTest extends BaseTest {
     public void completeAllTodos() {
         givenAppOpenedWith("a", "b", "c");
 
+        toggle("b");
+
+        assertActiveItemsLeft(2);
+
         toggleAll();
-        filterCompleted();
-        assertTodos("a", "b", "c");
+        assertActiveItemsLeft(0);
     }
 
     @Test
@@ -126,8 +181,9 @@ public class TodoMvcTest extends BaseTest {
         givenAppOpenedWith("a", "b", "c");
         toggle("a");
 
-        delete("a");
+        clearCompleted();
         assertTodos("b", "c");
+        assertActiveItemsLeft(2);
     }
 
     @Test
@@ -135,7 +191,7 @@ public class TodoMvcTest extends BaseTest {
         givenAppOpenedWith("a", "b", "c");
         toggleAll();
 
-        assertTodoCounter("0");
+        assertActiveItemsLeft(0);
 
         clearCompleted();
         assertNoTodos();
@@ -146,8 +202,8 @@ public class TodoMvcTest extends BaseTest {
         givenAppOpenedWith("a", "b", "c");
         toggle("a");
 
-        edit("a", "abc");
-        assertTodos("abc", "b", "c");
+        edit("a", "a edited");
+        assertTodos("a edited", "b", "c");
     }
 
     private final ElementsCollection todos  = $$("#todo-list>li");
@@ -180,12 +236,24 @@ public class TodoMvcTest extends BaseTest {
         $$("#todo-list>li").shouldHaveSize(0);
     }
 
-    private void assertTodoCounter(String count) {
-        $("#todo-count strong").shouldHave(text(count));
+    private void assertActiveItemsLeft(int count) {
+        $("#todo-count strong").shouldHave(text(String.valueOf(count)));
     }
 
     private void toggle(String todo) {
         todos.findBy(text(todo)).find(".toggle").click();
+    }
+
+    private void pressTabNumberOfTimes(int number) {
+        for (int i = 1; i <= number; i++) {
+            Actions action = new Actions(WebDriverRunner.getWebDriver());
+            action.sendKeys(Keys.TAB).perform();
+        }
+    }
+
+    private void pressSpace() {
+        Actions action = new Actions(WebDriverRunner.getWebDriver());
+        action.sendKeys(Keys.SPACE).perform();
     }
 
     private void toggleAll() {
