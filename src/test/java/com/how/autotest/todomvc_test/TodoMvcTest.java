@@ -54,18 +54,27 @@ public class TodoMvcTest extends BaseTest {
     public void assertNoTodosOnFreshOpen() {
         givenAppOpened();
 
+        add(/*empty*/);
+
         assertNoTodos();
     }
 
     @Test
-    public void addTodos() {
+    public void createOneTodo() {
         givenAppOpened();
 
         add("a");
+
         assertTodos("a");
         assertActiveItemsLeft(1);
+    }
 
-        add("b", "c");
+    @Test
+    public void createManyTodos() {
+        givenAppOpened();
+
+        add("a", "b", "c");
+
         assertTodos("a", "b", "c");
         assertActiveItemsLeft(3);
     }
@@ -74,28 +83,124 @@ public class TodoMvcTest extends BaseTest {
     public void editTodo() {
         givenAppOpenedWith("a", "b", "c");
 
-        assertActiveItemsLeft(3);
         edit("b", "b edited");
+
         assertTodos("a", "b edited", "c");
         assertActiveItemsLeft(3);
     }
 
     @Test
-    public void deleteTodos() {
+    public void editTodoUsingTab() {
         givenAppOpenedWith("a", "b", "c");
 
-        delete("a", "c");
-        assertTodos("b");
-        assertActiveItemsLeft(1);
+        editWithTab("b", "b edited");
+
+        assertTodos("a", "b edited", "c");
+        assertActiveItemsLeft(3);
     }
 
     @Test
-    public void deleteTodoByEditToBlankString() {
-        givenAppOpenedWith("a");
+    public void cancelEdit() {
+        givenAppOpenedWith("a", "b", "c");
 
-        edit("a", " ");
+        cancelEdit("a", "to be canceled");
+
+        assertTodos("a", "b", "c");
+        assertActiveItemsLeft(3);
+    }
+
+    @Test
+    public void completeTodo() {
+        givenAppOpenedWith("a", "b", "c");
+
+        toggle("c");
+
+        assertCompleted("c");
+        assertActiveItemsLeft(2);
+    }
+
+    @Test
+    public void completeAll() {
+        givenAppOpenedWith("a", "b", "c");
+
+        toggleAll();
+
+        assertActive(/*empty*/);
+        assertCompleted("a", "b", "c");
+        assertActiveItemsLeft(0);
+    }
+
+    @Test
+    public void completeAllWithSomeCompleted() {
+        givenAppOpenedWith("a", "b", "c");
+
+        toggle("b");
+
+        toggleAll();
+
+        assertActive(/*empty*/);
+        assertCompleted("a", "b", "c");
+        assertActiveItemsLeft(0);
+    }
+
+    @Test
+    public void activateTodo() {
+        givenAppOpenedWith("a", "b", "c");
+
+        toggle("b");
+        toggle("b");
+
+        assertCompleted(/*empty*/);
+        assertActive("a", "b", "c");
+        assertActiveItemsLeft(3);
+    }
+
+    @Test
+    public void activateAllTodos() {
+        givenAppOpenedWith("a", "b", "c");
+
+        toggleAll();
+
+        assertActive(/*empty*/);
+        assertCompleted("a", "b", "c");
+        assertActiveItemsLeft(0);
+
+        toggleAll();
+
+        assertCompleted(/*empty*/);
+        assertActive("a", "b", "c");
+        assertActiveItemsLeft(3);
+    }
+
+    @Test
+    public void clearCompletedTodo() {
+        givenAppOpenedWith("a", "b", "c");
+
+        toggle("c");
+        clearCompleted();
+
+        assertTodos("a", "b");
+        assertActiveItemsLeft(2);
+    }
+
+    @Test
+    public void clearAllCompletedTodos() {
+        givenAppOpenedWith("a", "b", "c");
+
+        toggleAll();
+        clearCompleted();
 
         assertNoTodos();
+    }
+
+    @Test
+    public void deleteTodo() {
+        givenAppOpenedWith("a", "b", "c");
+
+        delete("b");
+
+        assertTodos("a", "c");
+        assertActiveItemsLeft(2);
     }
 
     @Test
@@ -103,7 +208,18 @@ public class TodoMvcTest extends BaseTest {
         givenAppOpenedWith("a", "b", "c");
 
         delete("a", "b", "c");
+
         assertNoTodos();
+    }
+
+    @Test
+    public void deleteTodoByEditToBlank() {
+        givenAppOpenedWith("a", "b", "c");
+
+        edit("b", " ");
+
+        assertTodos("a", "c");
+        assertActiveItemsLeft(2);
     }
 
     @Test
@@ -125,76 +241,6 @@ public class TodoMvcTest extends BaseTest {
 
         assertTodos("a", "b");
         assertActiveItemsLeft(2);
-    }
-
-    @Test
-    public void completeTodo() {
-        givenAppOpenedWith("a", "b", "c");
-        toggle("c");
-
-        assertActiveItemsLeft(2);
-
-        clearCompleted();
-        assertTodos("a", "b");
-        assertActiveItemsLeft(2);
-    }
-
-    @Test
-    public void uncompleteTodo() {
-        givenAppOpenedWith("a");
-        toggle("a");
-
-        filterCompleted();
-        assertTodos("a");
-
-        toggle("a");
-        filterActive();
-        assertTodos("a");
-    }
-
-    @Test
-    public void completeAllTodos() {
-        givenAppOpenedWith("a", "b", "c");
-
-        toggle("b");
-
-        assertActiveItemsLeft(2);
-
-        toggleAll();
-        assertActiveItemsLeft(0);
-    }
-
-    @Test
-    public void uncompleteAllTodos() {
-        givenAppOpenedWith("a", "b", "c");
-
-        toggleAll();
-        filterCompleted();
-        toggleAll();
-
-        filterActive();
-        assertTodos("a", "b", "c");
-    }
-
-    @Test
-    public void clearCompleteTodo() {
-        givenAppOpenedWith("a", "b", "c");
-        toggle("a");
-
-        clearCompleted();
-        assertTodos("b", "c");
-        assertActiveItemsLeft(2);
-    }
-
-    @Test
-    public void clearAllTodos() {
-        givenAppOpenedWith("a", "b", "c");
-        toggleAll();
-
-        assertActiveItemsLeft(0);
-
-        clearCompleted();
-        assertNoTodos();
     }
 
     @Test
@@ -271,6 +317,22 @@ public class TodoMvcTest extends BaseTest {
 
     private void edit(String oldText, String newText) {
         startEditing(oldText, newText).pressEnter();
+    }
+
+    private void assertCompleted(String... texts) {
+        for (String todo : texts) {
+            todos.findBy(text(todo)).shouldHave(cssClass("completed"));
+        }
+    }
+
+    private void assertActive(String... texts) {
+        for (String todo : texts) {
+            todos.findBy(text(todo)).shouldHave(cssClass("active"));
+        }
+    }
+
+    private void editWithTab(String oldText, String newText) {
+        startEditing(oldText, newText).pressTab();
     }
 
     private void cancelEdit(String oldText, String newText) {
