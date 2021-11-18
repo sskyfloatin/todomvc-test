@@ -7,7 +7,8 @@ import com.codeborne.selenide.WebDriverRunner;
 import com.how.autotest.todomvc_test.testConfigs.BaseTest;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.Keys;
-import org.openqa.selenium.interactions.Actions;
+
+import java.util.stream.IntStream;
 
 import static com.codeborne.selenide.CollectionCondition.texts;
 import static com.codeborne.selenide.Condition.*;
@@ -291,15 +292,11 @@ public class TodoMvcTest extends BaseTest {
     }
 
     private void pressTabNumberOfTimes(int number) {
-        for (int i = 1; i <= number; i++) {
-            Actions action = new Actions(WebDriverRunner.getWebDriver());
-            action.sendKeys(Keys.TAB).perform();
-        }
+        IntStream.range(0, number).forEach(n -> Selenide.actions().sendKeys(Keys.TAB).perform());
     }
 
     private void pressSpace() {
-        Actions action = new Actions(WebDriverRunner.getWebDriver());
-        action.sendKeys(Keys.SPACE).perform();
+        Selenide.actions().sendKeys(Keys.SPACE).perform();
     }
 
     private void toggleAll() {
@@ -320,15 +317,19 @@ public class TodoMvcTest extends BaseTest {
     }
 
     private void assertCompleted(String... texts) {
-        for (String todo : texts) {
-            todos.findBy(text(todo)).shouldHave(cssClass("completed"));
+        if(isListNotEmpty(texts)) {
+            this.todos.filterBy(cssClass("completed")).shouldHave(texts(texts));
         }
     }
 
     private void assertActive(String... texts) {
-        for (String todo : texts) {
-            todos.findBy(text(todo)).shouldHave(cssClass("active"));
+        if(isListNotEmpty(texts)) {
+            this.todos.filterBy(cssClass("active")).shouldHave(texts(texts));
         }
+    }
+
+    private boolean isListNotEmpty(String[] texts) {
+        return texts.length > 0;
     }
 
     private void editWithTab(String oldText, String newText) {
